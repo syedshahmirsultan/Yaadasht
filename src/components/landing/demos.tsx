@@ -7,7 +7,7 @@ import { prefersReducedMotion, useInView } from "./hooks";
 
 const MEMORIES = [
   { ago: "1 year ago", kind: "Learning", text: "Finally understood how compound interest works. Started saving 10% of every salary.", color: "from-[#3d5afe] to-[#7c4dff]" },
-  { ago: "3 years ago", kind: "Journal", text: "Ammi taught me her biryani. I burnt the onions twice and she laughed the whole time.", color: "from-[#ff9f43] to-[#f9582d]" },
+  { ago: "3 years ago", kind: "Journal", text: "Grandma taught me her apple pie. I burnt the crust twice and she laughed the whole time.", color: "from-[#ff9f43] to-[#f9582d]" },
   { ago: "6 years ago", kind: "Idea", text: "A café where every table has a shelf of books you can take home. Call it 'Chapter'.", color: "from-[#12b886] to-[#0c8599]" },
   { ago: "9 years ago", kind: "Journal", text: "Last exam done. We sat by the river until the sun went down and nobody wanted to leave.", color: "from-[#e64980] to-[#ae3ec9]" },
 ];
@@ -53,8 +53,8 @@ export function OnThisDayDemo() {
 
 const QUERIES = [
   { q: "react", hits: ["Learned: React Server Components stream HTML", "Idea: a React course for my cousins"] },
-  { q: "ammi", hits: ["Ammi's biryani, step by step", "The day Ammi visited my office"] },
-  { q: "hunza", hits: ["Trip to Hunza: the cherry blossoms", "Learned: how glaciers carve valleys"] },
+  { q: "grandma", hits: ["Grandma's apple pie, step by step", "The day Grandma visited my office"] },
+  { q: "kyoto", hits: ["Kyoto: the cherry blossoms at dawn", "Learned: how temples were built without nails"] },
 ];
 
 /** Search: type a word, find it across years of writing. */
@@ -155,7 +155,7 @@ export function AccentDemo() {
   );
 }
 
-const IDEAS = ["A podcast about grandparents' stories", "Learn to play the rubab", "Build a tiny library at the park", "Write letters to my kids for their 18th birthdays", "Plant a mango tree"];
+const IDEAS = ["A podcast about grandparents' stories", "Learn to play the cello", "Build a tiny library at the park", "Write letters to my kids for their 18th birthdays", "Run a marathon before 40", "Start a Sunday supper club"];
 
 /** Ideas float up like thoughts you caught just in time. */
 export function IdeasDemo() {

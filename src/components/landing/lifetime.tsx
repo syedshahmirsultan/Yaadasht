@@ -12,11 +12,11 @@ const TOTAL = YEARS * WEEKS;
 
 const MILESTONES = [
   { year: 2026, title: "Today", text: "Started keeping everything in one place. First entry: what I learned this week." },
-  { year: 2031, title: "First home", text: "The keys felt heavier than I expected. Ammi cried more than I did." },
+  { year: 2031, title: "First home", text: "The keys felt heavier than I expected. Mom cried more than I did." },
   { year: 2036, title: "A new city", text: "Everything unfamiliar. Wrote every night so I wouldn't forget who I was." },
-  { year: 2041, title: "Their first words", text: "She said 'chand' pointing at the moon. I wrote it down the same minute." },
+  { year: 2041, title: "Their first words", text: "She said 'moon' pointing at the sky. I wrote it down the same minute." },
   { year: 2046, title: "Twenty years of notes", text: "Searched 'fear' and read how I got through every hard year. I'm braver than I thought." },
-  { year: 2051, title: "Still learning", text: "Took up the rubab at last. Lesson one: patience. Lesson two: more patience." },
+  { year: 2051, title: "Still learning", text: "Took up the cello at last. Lesson one: patience. Lesson two: more patience." },
   { year: 2056, title: "Look back", text: "Thirty years, one place. My children read my first entry today." },
 ];
 

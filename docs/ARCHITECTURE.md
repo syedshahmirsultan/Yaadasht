@@ -198,7 +198,7 @@ Each phase ends with: tests passing, accessibility check, mobile review, and a s
 
 Decided: Vercel (Hobby, free) · Clerk · Supabase Postgres · Resend · encrypted re-copyable share tokens · 500 MB default quota.
 
-1. **File storage (Phase 3):** Cloudflare R2 (10 GB free, supports 250 MB files, needs a card on file but no charge) vs Supabase Storage (1 GB free, **50 MB per-file limit on the free plan**, would cap videos at 50 MB).
+1. **File storage:** decided: **Supabase Storage** (private bucket `yaadasht-media`, created automatically). Free plan limit 50 MB per file, set by `UPLOAD_MAX_BYTES`. Implementation is isolated in `src/server/storage.ts`, so Cloudflare R2 (250 MB files) can replace it later.
 2. **Error tracking** at launch: none (default) vs scrubbed Sentry.
 3. **Vercel Hobby is non-commercial.** Moving to Pro is required if yaadasht.com ever charges money or shows ads.
 4. **Supabase free projects pause after 7 days without activity**; a daily cron request keeps the database awake.

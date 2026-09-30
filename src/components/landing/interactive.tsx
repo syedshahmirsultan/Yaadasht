@@ -71,10 +71,12 @@ export function RotatingWord({ words, className }: { words: string[]; className?
   }, [words.length]);
   return (
     <span className={cn("relative inline-grid", className)}>
-      {/* Reserve the width of the longest word so the headline never jumps */}
-      <span aria-hidden className="invisible col-start-1 row-start-1">
-        {words.reduce((a, b) => (b.length > a.length ? b : a))}
-      </span>
+      {/* Every word sits invisibly in the same cell, so the space always fits the widest one */}
+      {words.map((w) => (
+        <span key={w} aria-hidden className="invisible col-start-1 row-start-1">
+          {w}
+        </span>
+      ))}
       <span key={words[i]} className="animate-word col-start-1 row-start-1" aria-live="polite">
         {words[i]}
       </span>

@@ -2,11 +2,10 @@
 
 import { Check, Monitor, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useOptimistic, useSyncExternalStore, useTransition } from "react";
-import { toast } from "sonner";
-import { preferenceAttributes, type Preferences } from "@/lib/preferences";
+import { useSyncExternalStore } from "react";
+import { useAppearance } from "@/components/layout/appearance";
+import type { NavPosition, Preferences } from "@/lib/preferences";
 import { cn } from "@/lib/utils";
-import { updatePreferences } from "@/server/preferences";
 
 const THEMES = [
   { value: "light", label: "Paper", icon: Sun },
@@ -21,6 +20,28 @@ const ACCENT_SWATCHES: { value: Preferences["accent"]; label: string; color: str
   { value: "ocean", label: "Ocean", color: "#3a7ca5" },
   { value: "plum", label: "Plum", color: "#7d5ba6" },
 ];
+
+const NAV_CHOICES: { value: NavPosition; label: string }[] = [
+  { value: "left", label: "Left" },
+  { value: "right", label: "Right" },
+  { value: "top", label: "Top" },
+  { value: "bottom", label: "Bottom dock" },
+];
+
+/** A tiny sketch of each layout. */
+function NavPreview({ position }: { position: NavPosition }) {
+  const bar = "rounded bg-saffron/60";
+  return (
+    <span aria-hidden className={cn("flex h-14 w-24 gap-1 rounded-lg border border-border bg-background p-1", (position === "top" || position === "bottom") && "flex-col")}>
+      {position === "left" && <span className={cn("w-5", bar)} />}
+      {position === "top" && <span className={cn("h-2.5", bar)} />}
+      <span className="relative flex-1 rounded bg-card">
+        {position === "bottom" && <span className={cn("absolute bottom-1 left-1/2 h-2 w-10 -translate-x-1/2", bar)} />}
+      </span>
+      {position === "right" && <span className={cn("w-5", bar)} />}
+    </span>
+  );
+}
 
 function Group({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
@@ -65,22 +86,10 @@ function Choice({
   );
 }
 
-export function AppearancePicker({ initial }: { initial: Preferences }) {
+export function AppearancePicker() {
   const { theme, setTheme } = useTheme();
   const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
-  const [prefs, setOptimistic] = useOptimistic(initial, (cur, patch: Partial<Preferences>) => ({ ...cur, ...patch }));
-  const [, startTransition] = useTransition();
-
-  function choose(patch: Partial<Preferences>) {
-    // Apply instantly, then save to the account in the background.
-    const attrs = preferenceAttributes({ ...prefs, ...patch });
-    for (const [k, v] of Object.entries(attrs)) document.documentElement.setAttribute(k, v);
-    startTransition(async () => {
-      setOptimistic(patch);
-      const res = await updatePreferences(patch);
-      if (!res.ok) toast.error("We couldn't save that change. Please try again.");
-    });
-  }
+  const { prefs, update: choose } = useAppearance();
 
   return (
     <div className="space-y-8 rounded-2xl border border-border bg-card p-5 shadow-soft md:p-6">
@@ -124,23 +133,32 @@ export function AppearancePicker({ initial }: { initial: Preferences }) {
         </div>
       </Group>
 
-      <Group label="Navigation" hint="Where your main menu lives on larger screens.">
-        <div role="radiogroup" aria-label="Navigation layout" className="grid grid-cols-2 gap-2">
-          <Choice label="Sidebar" selected={prefs.layout === "sidebar"} onSelect={() => choose({ layout: "sidebar" })}>
-            <span aria-hidden className="flex h-14 w-24 gap-1 rounded-lg border border-border bg-background p-1">
-              <span className="w-6 rounded bg-muted" />
-              <span className="flex-1 rounded bg-card" />
-            </span>
-            Sidebar
-          </Choice>
-          <Choice label="Top bar" selected={prefs.layout === "topbar"} onSelect={() => choose({ layout: "topbar" })}>
-            <span aria-hidden className="flex h-14 w-24 flex-col gap-1 rounded-lg border border-border bg-background p-1">
-              <span className="h-3 rounded bg-muted" />
-              <span className="flex-1 rounded bg-card" />
-            </span>
-            Top bar
-          </Choice>
+      <Group label="Navigation" hint="Put your menu wherever feels right. On phones it always sits at the bottom.">
+        <div role="radiogroup" aria-label="Menu position" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {NAV_CHOICES.map((n) => (
+            <Choice key={n.value} label={n.label} selected={prefs.navPosition === n.value} onSelect={() => choose({ navPosition: n.value })}>
+              <NavPreview position={n.value} />
+              {n.label}
+            </Choice>
+          ))}
         </div>
+        {(prefs.navPosition === "left" || prefs.navPosition === "right") && (
+          <label className="mt-3 flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-border bg-background/60 px-4 py-3">
+            <span>
+              <span className="block text-sm font-medium">Slim menu</span>
+              <span className="block text-xs text-muted-foreground">Icons only, more room to write. Shortcut: Ctrl + \</span>
+            </span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={prefs.sidebarCollapsed}
+              onClick={() => choose({ sidebarCollapsed: !prefs.sidebarCollapsed })}
+              className={cn("relative h-6 w-11 shrink-0 rounded-full transition-colors", prefs.sidebarCollapsed ? "bg-saffron" : "bg-muted")}
+            >
+              <span className={cn("absolute top-0.5 left-0.5 size-5 rounded-full bg-white shadow transition-transform", prefs.sidebarCollapsed && "translate-x-5")} />
+            </button>
+          </label>
+        )}
       </Group>
 
       <Group label="Writing font" hint="The typeface for your memories.">

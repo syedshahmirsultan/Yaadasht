@@ -1,9 +1,10 @@
 "use client";
 
+import { Show } from "@clerk/nextjs";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Logo } from "@/components/brand/logo";
+import { Logo, LogoTile } from "@/components/brand/logo";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { cn } from "@/lib/utils";
 
@@ -34,16 +35,34 @@ export function SiteHeader() {
         </nav>
         <div className="flex items-center gap-1">
           <ThemeToggle />
-          <Link href="/sign-in" className="hidden rounded-full px-3.5 py-2 text-sm font-medium hover:bg-muted sm:block">
-            Sign in
-          </Link>
-          <Link
-            href="/sign-up"
-            className="group inline-flex h-9 items-center gap-1.5 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground transition hover:shadow-[0_0_24px_-4px_var(--glow-amber)]"
+          <Show
+            when="signed-in"
+            fallback={
+              <>
+                <Link href="/sign-in" className="hidden rounded-full px-3.5 py-2 text-sm font-medium hover:bg-muted sm:block">
+                  Sign in
+                </Link>
+                <Link
+                  href="/sign-up"
+                  className="group inline-flex h-9 items-center gap-1.5 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground transition hover:shadow-[0_0_24px_-4px_var(--glow-amber)]"
+                >
+                  Start free
+                  <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden />
+                </Link>
+              </>
+            }
           >
-            Start free
-            <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden />
-          </Link>
+            <Link
+              href="/today"
+              className="glow-border group inline-flex h-10 items-center gap-2 rounded-full bg-card/70 py-1 pr-2 pl-1 text-sm font-medium backdrop-blur-md transition hover:bg-card hover:shadow-[0_0_28px_-6px_var(--glow-amber)]"
+            >
+              <LogoTile className="size-8 rounded-full ring-0" title="" />
+              <span className="pl-0.5">Open Yaadasht</span>
+              <span className="inline-flex size-7 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform group-hover:translate-x-0.5 group-hover:-rotate-12">
+                <ArrowRight className="size-3.5" aria-hidden />
+              </span>
+            </Link>
+          </Show>
         </div>
       </div>
     </header>

@@ -16,7 +16,7 @@ const SPARKS = [
 
 /**
  * The logo as a living object: it tilts toward the pointer, memories ripple
- * outward from it, sparks of light rise from the mind, and a shine passes over it.
+ * outward from it, and sparks of light rise from the mind.
  */
 export function LogoOrb() {
   const stageRef = useRef<HTMLDivElement>(null);
@@ -91,11 +91,6 @@ export function LogoOrb() {
               aria-hidden
               className="pointer-events-none absolute inset-0 mix-blend-soft-light"
               style={{ background: "radial-gradient(circle at var(--gx, 50%) var(--gy, 40%), rgba(255,255,255,0.35), transparent 55%)" }}
-            />
-            {/* an occasional shine */}
-            <span
-              aria-hidden
-              className="animate-sheen pointer-events-none absolute inset-y-0 left-0 w-1/4 -skew-x-12 bg-gradient-to-r from-transparent via-white/25 to-transparent [animation-duration:7s]"
             />
           </div>
 

@@ -113,21 +113,21 @@ function Sheen() {
   );
 }
 
-// Static: served instantly from the edge. Signed-in visitors are sent to /today by the proxy.
+// Static: served instantly from the edge. The header switches to "Open Yaadasht" for signed-in visitors.
 export default function LandingPage() {
   return (
     <div className="relative overflow-x-clip">
       <SiteHeader />
 
       {/* Hero */}
-      <CursorGlow className="grain relative isolate overflow-hidden">
+      <CursorGlow className="relative isolate overflow-hidden">
         <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
           <div className="animate-aurora absolute -top-40 -left-32 size-[40rem] rounded-full bg-[radial-gradient(closest-side,color-mix(in_oklab,var(--electric)_45%,transparent),transparent)] blur-3xl" />
           <div className="animate-aurora absolute -top-20 right-[-10rem] size-[36rem] rounded-full bg-[radial-gradient(closest-side,color-mix(in_oklab,var(--glow-amber)_38%,transparent),transparent)] blur-3xl [animation-delay:-8s]" />
           <div className="absolute inset-0 bg-[linear-gradient(to_right,color-mix(in_oklab,var(--foreground)_5%,transparent)_1px,transparent_1px),linear-gradient(to_bottom,color-mix(in_oklab,var(--foreground)_5%,transparent)_1px,transparent_1px)] [mask-image:radial-gradient(ellipse_at_center,black_20%,transparent_70%)] bg-[size:56px_56px]" />
         </div>
 
-        <section className="relative z-10 mx-auto grid max-w-6xl items-center gap-10 px-5 pt-32 pb-20 md:grid-cols-[1.05fr_1fr] md:px-8 md:pt-40 md:pb-28">
+        <section className="relative z-10 mx-auto grid max-w-6xl items-center gap-10 px-5 pt-28 pb-20 md:grid-cols-[1.05fr_1fr] md:px-8 md:pt-24 md:pb-28">
           <div>
             <p className="animate-rise glow-border inline-flex items-center gap-2 rounded-full bg-card/60 px-3.5 py-1.5 text-xs font-medium backdrop-blur">
               <span className="relative flex size-2">
@@ -151,7 +151,7 @@ export default function LandingPage() {
             </h1>
 
             <p
-              className="animate-rise mt-6 max-w-lg text-lg leading-relaxed text-pretty text-muted-foreground"
+              className="animate-rise mt-6 max-w-[27rem] text-lg leading-relaxed text-pretty text-muted-foreground"
               style={{ animationDelay: "160ms" }}
             >
               Yaadasht is one private, beautiful home for your journal, the things you learn, your ideas and the moments
@@ -233,7 +233,7 @@ export default function LandingPage() {
                   <Typewriter
                     texts={[
                       "Today I finally understood why the sky turns orange at sunset. Light travels further, and the blue scatters away.",
-                      "Ammi called. We laughed about the bazaar, the jalebi, and the shopkeeper who looked after me.",
+                      "Mom called. We laughed about the time I got lost at the county fair and a stranger bought me ice cream.",
                       "Idea: a weekend reading club for the kids on our street. Start with ten books and one mat.",
                     ]}
                   />
@@ -289,7 +289,7 @@ export default function LandingPage() {
                 {[
                   { icon: FileText, name: "journal/2026-09-30.md" },
                   { icon: FileJson, name: "yaadasht-archive.json" },
-                  { icon: Camera, name: "photos/hunza-sunrise.jpg" },
+                  { icon: Camera, name: "photos/kyoto-sunrise.jpg" },
                 ].map(({ icon: Icon, name }) => (
                   <li key={name} className="flex items-center gap-2.5 rounded-xl bg-muted/60 px-3.5 py-2.5 transition hover:translate-x-1">
                     <Icon className="size-4 text-saffron" aria-hidden />
