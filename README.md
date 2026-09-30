@@ -1,86 +1,138 @@
+<div align="center">
+
+<img src="public/brand/yaadasht-mark.webp" alt="Yaadasht" width="96" height="96" />
+
 # Yaadasht
 
 **Preserve today for your future self.**
 
-Yaadasht (یادداشت, *memory, remembrance, a written recollection*) is an open-source, private digital memory archive. Keep your journal, what you learned, your ideas, photos and videos in one calm place, and rediscover them years later with a timeline, a calendar, and *On this day*.
+A private, beautiful home for your journal, the things you learn, your ideas and your memories,
+built to be used for decades.
 
-> Status: **Phase 1, foundation.** Sign-in, encryption, database and the app shell are in place. The editor arrives in Phase 2.
+</div>
 
-## Principles
+---
 
-- **Writing first.** Your first memory in seconds.
-- **Private by default.** Nothing is public unless you share a single memory. Never sold, never used for ads or AI training.
-- **Honest privacy.** Your writing is encrypted before it is stored, with per-account keys held outside the database. Yaadasht is **not** end-to-end encrypted, the server can decrypt to show, search and share your memories. See [docs/SECURITY.md](docs/SECURITY.md) for exactly who can see what.
-- **Useful without AI.** Optional AI memory search is off by default.
-- **You own your data.** Export everything as Markdown, JSON, original media, and a browsable offline archive.
-- **Built for decades.**
+## What it is
 
-## Stack
+*Yaadasht* (یادداشت) is the Urdu and Persian word for a written remembrance. The app is a personal memory archive:
 
-Next.js 16 · TypeScript · Tailwind CSS v4 · shadcn/ui · Tiptap · Clerk · Supabase Postgres (Drizzle) · S3-compatible storage · Resend · Vercel
+- **Write:** a calm editor for journal entries, learnings and ideas, with autosave, tags, dates and collections.
+- **Keep:** photos, videos and files live alongside your words. Everything you write is encrypted before it is stored.
+- **Look back:** a timeline of your life, instant search, and *On this day*, which brings back what you wrote in earlier years.
+- **Make it yours:** light or dark, accent colours, fonts, and a menu that can sit on the left, right, top or bottom.
+- **Leave anytime:** memories download as Markdown; full archive export is on the roadmap.
 
-Runs entirely on free tiers: Vercel Hobby, Clerk, Supabase, Resend.
+AI is not the product. An optional, off-by-default AI helper is planned for later; Yaadasht is complete without it.
 
-## Getting started
+## Architecture at a glance
 
-Requirements: Node.js 22+.
+```
+Browser (Next.js, Tiptap editor)
+   │  HTTPS                        │ one-time signed upload / 5-minute signed download
+   ▼                               ▼
+Vercel: one Next.js app  ───────► Supabase Storage (private bucket: photos, videos, files)
+ • pages (React Server Components)
+ • server actions (all writes)      ┌──────────────► Clerk (sign-in, sessions, 2FA)
+ • encryption module ───────────────┤
+   (master key from env)            └──────────────► Supabase Postgres (schema "yaadasht")
+```
 
-### 1. Create the free accounts (≈10 minutes)
+| Layer | Choice |
+|---|---|
+| App | Next.js 16 (App Router), TypeScript, React 19 |
+| UI | Tailwind CSS v4, shadcn/ui primitives, Tiptap editor, CSS-only motion |
+| Auth | Clerk |
+| Database | Supabase Postgres via Drizzle ORM (migrations in `drizzle/`) |
+| Files | Supabase Storage, private bucket, direct browser uploads |
+| Crypto | Node `crypto`: AES-256-GCM, HKDF, HMAC-SHA256 |
+| Hosting | Vercel, with the region pinned next to the database |
 
-| Service | What to do | Values you'll copy |
-|---|---|---|
-| [Clerk](https://dashboard.clerk.com) | Create an application (enable Email + Google) | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY` |
-| [Supabase](https://supabase.com/dashboard) | Create a project. Click **Connect** | Transaction pooler URL → `DATABASE_URL`; Session pooler URL → `DIRECT_DATABASE_URL` |
-| [Vercel](https://vercel.com) | Import this repository (Hobby plan) |, |
-| [Resend](https://resend.com) | Needed from Phase 6 | `RESEND_API_KEY` |
+### How a memory is stored
 
-In Supabase, you can also turn off the Data API (Project Settings → API), Yaadasht doesn't use it.
+1. You type. The editor autosaves about a second after you pause.
+2. The server encrypts the title, text, tags and filenames with **your account's own key** (AES-256-GCM).
+3. Your key is itself locked by a **master key that never touches the database**.
+4. Postgres receives only ciphertext, plus the few things the app needs to sort and count: dates, sizes and IDs.
+5. When you open Yaadasht, the server unlocks your key and shows you your memories as normal.
 
-### 2. Configure
+Search works without storing readable text: each word becomes a keyed fingerprint (a "blind index").
+
+> **Where is my data in Supabase?** Tables live in the **`yaadasht`** schema (Table Editor → schema dropdown), not `public`. Files live in **Storage → `yaadasht-media`**. In both places you will only see ciphertext and random IDs; that is the encryption doing its job.
+
+## Key decisions and why
+
+| Decision | Why |
+|---|---|
+| **Server-side encryption, not end-to-end** | End-to-end encryption would mean a separate passphrase, a lock screen, and permanent data loss if it's forgotten, plus no server search. We chose an excellent experience and database-level protection, and we say plainly that the running server can decrypt. See [docs/SECURITY.md](docs/SECURITY.md). |
+| **One Next.js app, no separate backend** | Fewer moving parts. Server actions handle every write; there is nothing else to deploy. |
+| **Tables in a private `yaadasht` schema** | Supabase auto-publishes the `public` schema through its Data API. Keeping our tables elsewhere, with row-level security on, means they can never be exposed that way. |
+| **Dates stay readable, content does not** | Timeline, calendar and *On this day* stay fast in SQL. The database knows *when* you wrote, never *what*. |
+| **Files upload straight to storage** | Large videos never pass through our servers, which keeps the app fast and cheap. Storage keys contain only random IDs. |
+| **Clerk for authentication** | Sign-in, 2FA and account recovery are solved problems; we don't build them. Forgetting a password never loses memories. |
+| **Open formats and export** | Memories download as Markdown, readable without Yaadasht, decades from now. |
+| **Built on free tiers** | Vercel Hobby, Supabase, Clerk and Resend free plans, so anyone can run their own copy. |
+
+## Project structure
+
+```
+src/
+├── app/                 routes: (marketing) landing, (auth) sign-in, (app) the product
+├── components/          UI: editor, media, layout (sidebar, dock, command palette), landing
+├── lib/                 shared helpers: document model, dates, preferences
+└── server/              everything that touches data
+    ├── crypto/          encryption, key wrapping, blind search index
+    ├── db/              Drizzle schema and client
+    ├── entries.ts       the only place entry ciphertext is read or written
+    ├── attachments.ts   photos, videos and files
+    ├── storage.ts       Supabase Storage (swappable for S3 / R2)
+    └── actions.ts       server actions; each re-checks the signed-in user
+docs/                    product, architecture, security, database and AI design
+drizzle/                 SQL migrations
+tests/                   unit tests plus database and storage integration tests
+```
+
+## Run it locally
+
+Requires Node.js 22+ and free accounts on [Clerk](https://clerk.com) and [Supabase](https://supabase.com).
 
 ```bash
-cp .env.example .env.local
+cp .env.example .env.local   # fill in the Clerk and Supabase values
 npm install
-npm run keygen          # prints a new YAADASHT_MASTER_KEY
+npm run keygen               # prints a YAADASHT_MASTER_KEY; keep a copy somewhere safe
+npm run db:migrate           # creates the tables in Supabase
+npm run dev                  # http://localhost:3000
 ```
 
-Fill in `.env.local`. **Keep a copy of `YAADASHT_MASTER_KEY` in a password manager**, if it is lost, every memory becomes unreadable.
+> **Keep your master key safe.** If `YAADASHT_MASTER_KEY` is lost, every stored memory becomes unreadable.
 
-### 3. Create the database tables
+Useful commands: `npm test` · `npm run typecheck` · `npm run lint` · `npm run build`
 
-```bash
-npm run db:migrate
-```
+## Roadmap
 
-### 4. Run
-
-```bash
-npm run dev             # http://localhost:3000
-npm test                # unit tests (+ DB integration tests when DATABASE_URL is set)
-npm run typecheck
-npm run lint
-```
-
-### Deploying to Vercel
-
-Add the same variables in **Vercel → Project → Settings → Environment Variables** (mark `YAADASHT_MASTER_KEY` and `CLERK_SECRET_KEY` as *Sensitive*), run `npm run db:migrate` against the production database, then deploy.
+- [x] Foundation: sign-in, encryption, app shell, themes, customisable layout
+- [x] Core archive: editor, collections, tags, trash, search, timeline, *On this day*
+- [x] Photos, videos and files
+- [ ] Discovery: calendar, year view, filters
+- [ ] Sharing a single memory by private link
+- [ ] Letters to your future self, delivered by email on a chosen date
+- [ ] Optional AI memory search (off by default)
+- [ ] Full archive export and hardening
 
 ## Documentation
 
-| Doc | What's inside |
+| Doc | Read it for |
 |---|---|
-| [docs/PRODUCT.md](docs/PRODUCT.md) | Product principles, UX, screens, brand |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Stack, system design, flows, phases |
-| [docs/SECURITY.md](docs/SECURITY.md) | Threat model, encryption, what is and isn't protected |
-| [docs/DATABASE.md](docs/DATABASE.md) | Schema |
-| [docs/AI.md](docs/AI.md) | Optional AI memory search design |
+| [docs/PRODUCT.md](docs/PRODUCT.md) | Principles, screens, brand and UX rules |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design and data flows |
+| [docs/SECURITY.md](docs/SECURITY.md) | Threat model: exactly who can see what |
+| [docs/DATABASE.md](docs/DATABASE.md) | Schema and conventions |
+| [docs/AI.md](docs/AI.md) | The optional AI design |
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). Security issues: see [SECURITY.md](SECURITY.md), please do not open public issues for vulnerabilities.
+Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) first; it covers the privacy rules every change must follow: never log content, only `src/server` touches encrypted columns, and every query is scoped to the signed-in user. Report security issues privately as described in [SECURITY.md](SECURITY.md).
 
 ## License
 
-[AGPL-3.0](LICENSE)
-
-The Urdu wordmark is drawn from [Noto Nastaliq Urdu](https://fonts.google.com/noto/specimen/Noto+Nastaliq+Urdu) (SIL Open Font License 1.1).
+[AGPL-3.0](LICENSE). The Urdu wordmark is drawn from [Noto Nastaliq Urdu](https://fonts.google.com/noto/specimen/Noto+Nastaliq+Urdu) (SIL Open Font License 1.1).

@@ -111,8 +111,8 @@ Postgres full-text search needs plaintext, which we don't store. We use a **blin
 
 ## 7. Attachments
 
-- Browser uploads **directly** to S3-compatible storage using a presigned multipart upload that the server issues only after checking quota, size (≤ 250 MB), and type. The presigned policy enforces the byte limit.
-- Object keys are random: `u/{user_uuid}/{attachment_uuid}`, no filenames, no dates.
+- Browser uploads **directly** to Supabase Storage using a one-time signed upload URL that the server issues only after checking ownership, quota (reserved atomically), size (UPLOAD_MAX_BYTES, 50 MB on the free plan) and video length (≤ 10 min). After upload the server confirms the stored size; mismatches are rejected and deleted.
+- Object keys are random: `u/{user_uuid}/{attachment_uuid}`, no filenames, no dates. The service key that can read the bucket lives only on the server.
 - Bucket: private, no public ACLs, block-public-access on, server-side encryption at rest (provider default encryption on R2 / Supabase Storage).
 - Downloads/playback use presigned GET URLs valid for **5 minutes**, issued only to the owner (or to a valid share link that allows it).
 - Filename, MIME type, dimensions, and duration are app-encrypted in the database.

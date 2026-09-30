@@ -155,6 +155,35 @@ export const entrySearchTokens = app
   ])
   .enableRLS();
 
+export const attachmentKinds = ["image", "video", "audio", "file"] as const;
+export type AttachmentKind = (typeof attachmentKinds)[number];
+
+export const attachments = app
+  .table("attachments", {
+    id: uuid("id").primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    entryId: uuid("entry_id")
+      .notNull()
+      .references(() => entries.id, { onDelete: "cascade" }),
+    kind: text("kind", { enum: attachmentKinds }).notNull(),
+    /** u/{userId}/{attachmentId}: no filenames or dates in storage keys */
+    objectKey: text("object_key").notNull(),
+    filenameEnc: bytea("filename_enc").notNull(),
+    mimeTypeEnc: bytea("mime_type_enc").notNull(),
+    /** width, height, duration: encrypted JSON */
+    metaEnc: bytea("meta_enc"),
+    sizeBytes: bigint("size_bytes", { mode: "number" }).notNull(),
+    status: text("status", { enum: ["uploading", "ready"] }).notNull().default("uploading"),
+    position: integer("position").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  }, (t) => [
+    index("attachments_entry_idx").on(t.entryId, t.position),
+    index("attachments_user_status_idx").on(t.userId, t.status),
+  ])
+  .enableRLS();
+
 export type User = typeof users.$inferSelect;
 export type Collection = typeof collections.$inferSelect;
 export type Entry = typeof entries.$inferSelect;

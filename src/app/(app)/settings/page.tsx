@@ -1,9 +1,8 @@
-import { ChevronRight, Download, ShieldCheck, UserRound } from "lucide-react";
+import { ChevronRight, Download, ShieldCheck, Trash2, UserRound } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Page, PageHeader, SectionTitle } from "@/components/page";
 import { AppearancePicker } from "./appearance-picker";
-import { readPreferences } from "@/lib/preferences";
 import { requireUser } from "@/server/users";
 
 export const metadata: Metadata = { title: "Settings" };
@@ -42,7 +41,7 @@ export default async function SettingsPage() {
 
         <section>
           <SectionTitle>Make it yours</SectionTitle>
-          <AppearancePicker initial={readPreferences(user.preferences)} />
+          <AppearancePicker />
         </section>
 
         <section>
@@ -84,7 +83,13 @@ export default async function SettingsPage() {
             </div>
             <div className="flex items-center gap-3 border-t border-border pt-4 text-muted-foreground">
               <Download className="size-5" aria-hidden />
-              <span className="text-[0.95rem]">Download everything you&apos;ve written. Coming soon.</span>
+              <span className="text-[0.95rem]">Download your whole archive at once: coming soon. Single memories can already be downloaded as Markdown.</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4">
+              <Link href="/trash" className="inline-flex h-10 items-center gap-2 rounded-full border border-border px-4 text-sm font-medium hover:bg-muted">
+                <Trash2 className="size-4" aria-hidden />
+                Trash
+              </Link>
             </div>
           </div>
         </section>

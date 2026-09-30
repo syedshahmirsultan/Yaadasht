@@ -35,7 +35,7 @@ export function indexTerms(text: string): Set<string> {
     if (terms.size >= MAX_TOKENS_PER_ENTRY) break;
     terms.add(`w:${word}`);
     const chars = Array.from(word);
-    for (let n = MIN_PREFIX; n < Math.min(chars.length, MAX_PREFIX + 1); n++) {
+    for (let n = MIN_PREFIX; n <= Math.min(chars.length, MAX_PREFIX); n++) {
       terms.add(`p:${chars.slice(0, n).join("")}`);
     }
   }

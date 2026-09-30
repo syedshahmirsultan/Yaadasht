@@ -1,6 +1,7 @@
 import "server-only";
-import { and, asc, count, eq, isNull } from "drizzle-orm";
-import { openTextOrNull } from "@/server/crypto/fields";
+import { and, asc, count, eq, isNull, sql } from "drizzle-orm";
+import { uuidv7 } from "@/lib/id";
+import { openTextOrNull, sealText } from "@/server/crypto/fields";
 import { getUserKeys } from "@/server/crypto/userKeys";
 import { getDb } from "@/server/db";
 import { collections, entries, type CollectionKind } from "@/server/db/schema";
@@ -59,4 +60,67 @@ export async function countEntries(userId: string): Promise<number> {
     .from(entries)
     .where(and(eq(entries.userId, userId), isNull(entries.deletedAt)));
   return row?.n ?? 0;
+}
+
+// ── Managing collections ─────────────────────────────────────────────────────
+
+export const COLLECTION_COLOR_KEYS = ["saffron", "sage", "dusk", "rose", "sky"] as const;
+export const COLLECTION_ICON_KEYS = ["book-open", "lightbulb", "sparkles", "folder", "plane", "heart", "briefcase", "graduation-cap"] as const;
+
+export async function getCollection(userId: string, id: string): Promise<CollectionView | null> {
+  const all = await listCollections(userId);
+  return all.find((c) => c.id === id) ?? null;
+}
+
+export async function createCollection(
+  userId: string,
+  input: { name: string; color: string; icon: string },
+): Promise<string> {
+  const db = getDb();
+  const keys = await getUserKeys(userId);
+  const id = uuidv7();
+  const [{ max }] = await db
+    .select({ max: sql<number>`coalesce(max(${collections.position}), 0)` })
+    .from(collections)
+    .where(eq(collections.userId, userId));
+  await db.insert(collections).values({
+    id,
+    userId,
+    kind: "custom",
+    nameEnc: sealText(keys, { table: "collections", column: "name_enc", rowId: id }, input.name.trim().slice(0, 60)),
+    color: input.color,
+    icon: input.icon,
+    position: Number(max) + 1,
+  });
+  return id;
+}
+
+export async function updateCollection(
+  userId: string,
+  id: string,
+  input: { name?: string; color?: string; icon?: string },
+): Promise<void> {
+  const keys = await getUserKeys(userId);
+  await getDb()
+    .update(collections)
+    .set({
+      ...(input.name !== undefined && {
+        nameEnc: sealText(keys, { table: "collections", column: "name_enc", rowId: id }, input.name.trim().slice(0, 60)),
+      }),
+      ...(input.color && { color: input.color }),
+      ...(input.icon && { icon: input.icon }),
+      updatedAt: new Date(),
+    })
+    .where(and(eq(collections.id, id), eq(collections.userId, userId)));
+}
+
+/** Only custom, empty collections can be deleted, so no memory is ever lost by accident. */
+export async function deleteCollection(userId: string, id: string): Promise<"ok" | "not-empty" | "protected"> {
+  const db = getDb();
+  const c = await db.query.collections.findFirst({ where: and(eq(collections.id, id), eq(collections.userId, userId)) });
+  if (!c || c.kind !== "custom") return "protected";
+  const [{ n }] = await db.select({ n: count() }).from(entries).where(eq(entries.collectionId, id));
+  if (n > 0) return "not-empty";
+  await db.delete(collections).where(eq(collections.id, id));
+  return "ok";
 }

@@ -1,10 +1,14 @@
-import { BookOpen, Folder, Lightbulb, Sparkles, type LucideIcon } from "lucide-react";
+import { BookOpen, Briefcase, Folder, GraduationCap, Heart, Lightbulb, Plane, Sparkles, type LucideIcon } from "lucide-react";
 
 export const COLLECTION_ICONS: Record<string, LucideIcon> = {
   "book-open": BookOpen,
   lightbulb: Lightbulb,
   sparkles: Sparkles,
   folder: Folder,
+  plane: Plane,
+  heart: Heart,
+  briefcase: Briefcase,
+  "graduation-cap": GraduationCap,
 };
 
 /** Soft tints, readable in light and dark mode. */

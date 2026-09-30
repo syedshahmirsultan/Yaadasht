@@ -1,6 +1,6 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
+# ── Dependencies ────────────────────────────────────────────────
 /node_modules
 /.pnp
 .pnp.*
@@ -10,33 +10,56 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
-/coverage
-
-# next.js
+# ── Build output ────────────────────────────────────────────────
 /.next/
 /out/
-
-# production
 /build
+/dist
+.turbo
+.vercel
+*.tsbuildinfo
+next-env.d.ts
 
-# misc
-.DS_Store
+# ── Secrets: never commit these ─────────────────────────────────
+# .env.local holds the Clerk, Supabase and encryption master keys.
+.env*
+!.env.example
 *.pem
+*.key
 
-# debug
+# ── Tests & coverage ────────────────────────────────────────────
+/coverage
+/test-results
+/playwright-report
+/blob-report
+/playwright/.cache
+
+# ── Logs & caches ───────────────────────────────────────────────
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+.eslintcache
+.cache
 
-# env files (can opt-in for committing if needed)
-.env*
-!.env.example
+# ── Local databases and data dumps (may contain personal data) ──
+*.db
+*.sqlite
+*.sqlite3
+*.dump
+/pgdata
+/data
 
-# vercel
-.vercel
+# ── Editors & tools (personal settings) ─────────────────────────
+.claude/
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# ── Operating systems ───────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
