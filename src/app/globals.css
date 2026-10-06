@@ -102,6 +102,13 @@
 }
 
 /* ── Personal accents (Settings → Appearance). Saffron is the default above. ── */
+html[data-accent="default"] {
+  --saffron: #ea7a14;
+  --saffron-strong: #b85a06;
+  --ring: #ea7a14;
+  --accent: #fff0e0;
+  --accent-foreground: #9a4a06;
+}
 html[data-accent="rose"] {
   --saffron: #c0566a;
   --saffron-strong: #8f3346;
@@ -130,12 +137,54 @@ html[data-accent="plum"] {
   --accent: #e9e1f3;
   --accent-foreground: #4d3470;
 }
+html[data-accent="emerald"] {
+  --saffron: #059669;
+  --saffron-strong: #047857;
+  --ring: #059669;
+  --accent: #d1fae5;
+  --accent-foreground: #065f46;
+}
+html[data-accent="violet"] {
+  --saffron: #7c3aed;
+  --saffron-strong: #6d28d9;
+  --ring: #7c3aed;
+  --accent: #ede9fe;
+  --accent-foreground: #5b21b6;
+}
+html[data-accent="amber"] {
+  --saffron: #d97706;
+  --saffron-strong: #b45309;
+  --ring: #d97706;
+  --accent: #fef3c7;
+  --accent-foreground: #92400e;
+}
+html[data-accent="crimson"] {
+  --saffron: #e11d48;
+  --saffron-strong: #be123c;
+  --ring: #e11d48;
+  --accent: #ffe4e6;
+  --accent-foreground: #9f1239;
+}
+html[data-accent="coral"] {
+  --saffron: #ea580c;
+  --saffron-strong: #c2410c;
+  --ring: #ea580c;
+  --accent: #ffedd5;
+  --accent-foreground: #9a3412;
+}
 html.dark[data-accent="rose"] {
   --saffron: #e0879a;
   --saffron-strong: #eeb0bd;
   --ring: #e0879a;
   --accent: #2f1d23;
   --accent-foreground: #eeb0bd;
+}
+html.dark[data-accent="default"] {
+  --saffron: #ff9f43;
+  --saffron-strong: #ffbf80;
+  --ring: #ff9f43;
+  --accent: #2a1c0d;
+  --accent-foreground: #ffc58a;
 }
 html.dark[data-accent="sage"] {
   --saffron: #8fbc88;
@@ -158,7 +207,41 @@ html.dark[data-accent="plum"] {
   --accent: #241d31;
   --accent-foreground: #cdb9e8;
 }
-
+html.dark[data-accent="emerald"] {
+  --saffron: #34d399;
+  --saffron-strong: #6ee7b7;
+  --ring: #34d399;
+  --accent: #064e3b;
+  --accent-foreground: #6ee7b7;
+}
+html.dark[data-accent="violet"] {
+  --saffron: #a78bfa;
+  --saffron-strong: #c4b5fd;
+  --ring: #a78bfa;
+  --accent: #3b0764;
+  --accent-foreground: #c4b5fd;
+}
+html.dark[data-accent="amber"] {
+  --saffron: #fbbf24;
+  --saffron-strong: #fde68a;
+  --ring: #fbbf24;
+  --accent: #451a03;
+  --accent-foreground: #fde68a;
+}
+html.dark[data-accent="crimson"] {
+  --saffron: #fb7185;
+  --saffron-strong: #fda4af;
+  --ring: #fb7185;
+  --accent: #4c0519;
+  --accent-foreground: #fda4af;
+}
+html.dark[data-accent="coral"] {
+  --saffron: #fb923c;
+  --saffron-strong: #fdba74;
+  --ring: #fb923c;
+  --accent: #431407;
+  --accent-foreground: #fdba74;
+}
 /* Writing font and text size */
 :root {
   --writing-font: var(--font-newsreader);

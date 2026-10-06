@@ -128,6 +128,7 @@ const uploadSchema = z.object({
   filename: z.string().min(1).max(200),
   mimeType: z.string().min(1).max(120),
   sizeBytes: z.number().int().positive(),
+  hasPreview: z.boolean().optional(),
   meta: z
     .object({
       width: z.number().int().positive().max(100_000).optional(),

@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Download, FileText, Loader2, Music, Play, Trash2, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, FileText, Loader2, Music, Play, RotateCcw, Trash2, X, ZoomIn, ZoomOut } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Portal } from "@/components/ui/portal";
 import { cn } from "@/lib/utils";
@@ -51,30 +51,30 @@ export function AttachmentGallery({
             <div
               key={a.id}
               className={cn(
-                "group relative overflow-hidden rounded-2xl border border-border bg-muted shadow-soft",
-                visual.length === 1 ? "max-h-[70vh]" : "aspect-square",
+                "group relative overflow-hidden rounded-2xl border border-border bg-card shadow-soft",
+                visual.length === 1 ? "max-h-[75vh]" : "aspect-square",
                 i === 0 && visual.length >= 3 && "sm:col-span-2 sm:row-span-2 sm:aspect-auto",
               )}
             >
-              <button type="button" onClick={() => setOpen(i)} className="block size-full" aria-label={`Open ${a.filename}`}>
+              <button type="button" onClick={() => setOpen(i)} className="block size-full text-left" aria-label={`Open ${a.filename}`}>
                 {a.kind === "image" ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={a.url!}
                     alt={a.filename}
                     loading="lazy"
-                    className={cn("size-full transition duration-500 group-hover:scale-[1.03]", visual.length === 1 ? "object-contain" : "object-cover")}
+                    className={cn("size-full transition duration-500 group-hover:scale-[1.02]", visual.length === 1 ? "max-h-[70vh] w-full object-contain bg-black/5 dark:bg-black/30" : "object-cover")}
                   />
                 ) : (
-                  <span className="relative block size-full">
-                    <video src={`${a.url}#t=0.5`} preload="metadata" muted playsInline className="size-full object-cover" />
-                    <span className="absolute inset-0 flex items-center justify-center bg-black/25">
+                  <span className="relative block size-full bg-black/80">
+                    <video src={`${a.url}#t=0.5`} poster={a.previewUrl ?? undefined} preload="metadata" muted playsInline className="size-full object-cover opacity-80" />
+                    <span className="absolute inset-0 flex items-center justify-center bg-black/30 transition group-hover:bg-black/20">
                       <span className="inline-flex size-12 items-center justify-center rounded-full bg-white/90 text-black shadow-lift transition group-hover:scale-110">
                         <Play className="size-5 translate-x-0.5" fill="currentColor" />
                       </span>
                     </span>
-                    {formatDuration(a.meta.durationSec) && (
-                      <span className="absolute right-2 bottom-2 rounded-md bg-black/60 px-1.5 py-0.5 text-xs text-white">
+                    {formatDuration(a.meta?.durationSec) && (
+                      <span className="absolute right-2.5 bottom-2.5 rounded-md bg-black/70 px-2 py-0.5 text-xs font-medium text-white backdrop-blur-sm">
                         {formatDuration(a.meta.durationSec)}
                       </span>
                     )}
@@ -148,23 +148,37 @@ export function AttachmentGallery({
   );
 }
 
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+
 function RemoveButton({ onClick, label, inline }: { onClick: () => void; label: string; inline?: boolean }) {
+  const [confirmOpen, setConfirmOpen] = useState(false);
   return (
-    <button
-      type="button"
-      onClick={() => {
-        if (window.confirm(`Remove "${label}" from this memory?`)) onClick();
-      }}
-      aria-label={`Remove ${label}`}
-      className={cn(
-        "inline-flex size-8 items-center justify-center rounded-full transition",
-        inline
-          ? "text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-          : "absolute top-2 right-2 bg-black/60 text-white opacity-0 group-hover:opacity-100 hover:bg-destructive focus-visible:opacity-100",
-      )}
-    >
-      <Trash2 className="size-4" />
-    </button>
+    <>
+      <button
+        type="button"
+        onClick={() => setConfirmOpen(true)}
+        aria-label={`Remove ${label}`}
+        className={cn(
+          "inline-flex size-8 items-center justify-center rounded-full transition",
+          inline
+            ? "text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+            : "absolute top-2 right-2 z-10 bg-black/60 text-white opacity-0 group-hover:opacity-100 hover:bg-destructive focus-visible:opacity-100",
+        )}
+      >
+        <Trash2 className="size-4" />
+      </button>
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Remove file?"
+        description={`Are you sure you want to remove "${label}" from this memory?`}
+        confirmLabel="Remove"
+        onConfirm={() => {
+          setConfirmOpen(false);
+          onClick();
+        }}
+        onCancel={() => setConfirmOpen(false)}
+      />
+    </>
   );
 }
 
@@ -218,6 +232,12 @@ function Lightbox({
   onClose: () => void;
 }) {
   const a = items[index];
+  const [zoom, setZoom] = useState(1);
+
+  useEffect(() => {
+    setZoom(1);
+  }, [index, a?.id]);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -230,49 +250,99 @@ function Lightbox({
 
   return (
     <Portal>
-      <div className="fixed inset-0 z-[80] flex flex-col bg-black/92 backdrop-blur-sm" onClick={onClose} role="dialog" aria-modal="true" aria-label={a.filename}>
-        <div className="flex items-center justify-between p-4 text-sm text-white/80" onClick={(e) => e.stopPropagation()}>
-          <span className="truncate">
-            {a.filename} · {index + 1} of {items.length}
-          </span>
-          <div className="flex items-center gap-1">
-            {a.downloadUrl && (
-              <a href={a.downloadUrl} className="inline-flex size-10 items-center justify-center rounded-full hover:bg-white/10" aria-label="Download">
-                <Download className="size-5" />
-              </a>
-            )}
-            <button type="button" onClick={onClose} className="inline-flex size-10 items-center justify-center rounded-full hover:bg-white/10" aria-label="Close">
-              <X className="size-5" />
-            </button>
+      <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md" onClick={onClose} role="dialog" aria-modal="true" aria-label={a.filename}>
+        <div
+          className="relative flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-[2rem] border border-border bg-popover text-popover-foreground shadow-lift"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-border px-6 py-4 text-sm font-medium">
+            <span className="truncate text-foreground">
+              {a.filename} <span className="text-muted-foreground ml-1.5">({index + 1} of {items.length})</span>
+            </span>
+            <div className="flex items-center gap-2">
+              {a.kind === "image" && (
+                <div className="flex items-center gap-1 mr-2 rounded-full border border-border bg-background px-2 py-1 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setZoom((z) => Math.max(0.5, Math.round((z - 0.25) * 100) / 100))}
+                    disabled={zoom <= 0.5}
+                    className="p-1 text-muted-foreground hover:text-foreground disabled:opacity-40"
+                    aria-label="Zoom out"
+                  >
+                    <ZoomOut className="size-3.5" />
+                  </button>
+                  <span className="w-11 text-center font-mono text-[0.75rem]">{Math.round(zoom * 100)}%</span>
+                  <button
+                    type="button"
+                    onClick={() => setZoom((z) => Math.min(3, Math.round((z + 0.25) * 100) / 100))}
+                    disabled={zoom >= 3}
+                    className="p-1 text-muted-foreground hover:text-foreground disabled:opacity-40"
+                    aria-label="Zoom in"
+                  >
+                    <ZoomIn className="size-3.5" />
+                  </button>
+                  {zoom !== 1 && (
+                    <button
+                      type="button"
+                      onClick={() => setZoom(1)}
+                      className="ml-1 p-1 text-muted-foreground hover:text-foreground"
+                      aria-label="Reset zoom"
+                      title="Reset zoom"
+                    >
+                      <RotateCcw className="size-3.5" />
+                    </button>
+                  )}
+                </div>
+              )}
+              {a.downloadUrl && (
+                <a href={a.downloadUrl} className="inline-flex size-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground" aria-label="Download">
+                  <Download className="size-4" />
+                </a>
+              )}
+              <button type="button" onClick={onClose} className="inline-flex size-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground" aria-label="Close">
+                <X className="size-4" />
+              </button>
+            </div>
           </div>
-        </div>
-        <div className="relative flex flex-1 items-center justify-center px-4 pb-6" onClick={(e) => e.stopPropagation()}>
-          {a.kind === "image" ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img key={a.id} src={a.url!} alt={a.filename} className="animate-rise max-h-full max-w-full rounded-lg object-contain" />
-          ) : (
-            <video key={a.id} src={a.url!} controls autoPlay playsInline className="animate-rise max-h-full max-w-full rounded-lg" />
-          )}
-          {items.length > 1 && (
-            <>
-              <button
-                type="button"
-                onClick={() => onIndex((index - 1 + items.length) % items.length)}
-                className="absolute left-4 inline-flex size-11 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
-                aria-label="Previous"
-              >
-                <ChevronLeft className="size-6" />
-              </button>
-              <button
-                type="button"
-                onClick={() => onIndex((index + 1) % items.length)}
-                className="absolute right-4 inline-flex size-11 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
-                aria-label="Next"
-              >
-                <ChevronRight className="size-6" />
-              </button>
-            </>
-          )}
+
+          {/* Body with natural sizing & zoom */}
+          <div className="relative flex flex-1 items-center justify-center overflow-auto p-6 max-h-[78vh]">
+            {a.kind === "image" ? (
+              <div className="overflow-auto max-h-full max-w-full flex items-center justify-center p-2">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  key={a.id}
+                  src={a.url!}
+                  alt={a.filename}
+                  style={{ transform: `scale(${zoom})`, transformOrigin: "center center" }}
+                  className="animate-rise max-h-[70vh] w-auto max-w-full rounded-2xl object-contain shadow-soft transition-transform duration-200"
+                />
+              </div>
+            ) : (
+              <video key={a.id} src={a.url!} controls autoPlay playsInline className="animate-rise max-h-[72vh] w-full max-w-full rounded-2xl object-contain" />
+            )}
+            {items.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => onIndex((index - 1 + items.length) % items.length)}
+                  className="absolute left-4 inline-flex size-10 items-center justify-center rounded-full border border-border bg-popover/90 text-foreground shadow-lift hover:bg-accent"
+                  aria-label="Previous"
+                >
+                  <ChevronLeft className="size-5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onIndex((index + 1) % items.length)}
+                  className="absolute right-4 inline-flex size-10 items-center justify-center rounded-full border border-border bg-popover/90 text-foreground shadow-lift hover:bg-accent"
+                  aria-label="Next"
+                >
+                  <ChevronRight className="size-5" />
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </Portal>

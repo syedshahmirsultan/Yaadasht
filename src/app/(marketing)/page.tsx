@@ -173,7 +173,7 @@ export default function LandingPage() {
             </div>
 
             <ul className="animate-rise mt-8 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground" style={{ animationDelay: "320ms" }}>
-              {["Encrypted before it's stored", "No ads, ever", "Export everything", "Open source"].map((t) => (
+              {["Encrypted before it's stored", "Export everything"].map((t) => (
                 <li key={t} className="flex items-center gap-1.5">
                   <span className="size-1 rounded-full bg-saffron" />
                   {t}
@@ -378,7 +378,6 @@ export default function LandingPage() {
             <Link href="/sign-in" className="hover:text-foreground">
               Sign in
             </Link>
-            <span>Open source</span>
           </nav>
         </div>
       </footer>

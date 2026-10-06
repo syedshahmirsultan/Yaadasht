@@ -1,6 +1,6 @@
 "use client";
 
-import { Code2, Download, FileText } from "lucide-react";
+import { Download, FileText } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { prefersReducedMotion } from "./hooks";
@@ -170,9 +170,6 @@ export function LifetimeScroll() {
               </span>
               <span className="flex items-center gap-1.5">
                 <Download className="size-4 text-saffron" /> Export anytime
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Code2 className="size-4 text-saffron" /> Open source
               </span>
             </div>
           </div>

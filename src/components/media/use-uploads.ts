@@ -30,6 +30,7 @@ function formatMB(bytes: number) {
 /** Reads dimensions and duration in the browser, without uploading anything. */
 async function probe(file: File, kind: UploadItem["kind"], url: string) {
   const meta: { width?: number; height?: number; durationSec?: number } = {};
+  let poster: Blob | null = null;
   if (kind === "image") {
     await new Promise<void>((resolve) => {
       const img = new Image();
@@ -51,13 +52,29 @@ async function probe(file: File, kind: UploadItem["kind"], url: string) {
           meta.width = el.videoWidth;
           meta.height = el.videoHeight;
         }
-        resolve();
+        if (kind === "audio") resolve();
       };
       el.onerror = () => resolve();
+      if (kind === "video") {
+        el.onloadeddata = () => {
+          const video = el as HTMLVideoElement;
+          const canvas = document.createElement("canvas");
+          const scale = Math.min(1, 1280 / video.videoWidth, 720 / video.videoHeight);
+          canvas.width = Math.max(1, Math.round(video.videoWidth * scale));
+          canvas.height = Math.max(1, Math.round(video.videoHeight * scale));
+          const context = canvas.getContext("2d");
+          if (!context) return resolve();
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob((blob) => {
+            poster = blob;
+            resolve();
+          }, "image/jpeg", 0.82);
+        };
+      }
       el.src = url;
     });
   }
-  return meta;
+  return { meta, poster };
 }
 
 function putWithProgress(url: string, file: File, onProgress: (p: number) => void) {
@@ -131,7 +148,7 @@ export function useUploads({
           };
 
           if (file.size > maxBytes) return fail(`"${file.name}" ${REASONS["too-large"]}`);
-          const meta = await probe(file, kind, previewUrl ?? URL.createObjectURL(file));
+          const { meta, poster } = await probe(file, kind, previewUrl ?? URL.createObjectURL(file));
           if (kind === "video" && (meta.durationSec ?? 0) > MAX_VIDEO_SECONDS) return fail(`"${file.name}" ${REASONS["too-long"]}`);
 
           try {
@@ -141,9 +158,17 @@ export function useUploads({
               mimeType: file.type || "application/octet-stream",
               sizeBytes: file.size,
               meta,
+              hasPreview: poster !== null,
             });
             if (!start.ok) return fail(`"${file.name}" ${REASONS[start.reason] ?? "couldn't be uploaded."}`);
             await putWithProgress(start.uploadUrl, file, (p) => patch(key, { progress: p }));
+            if (poster && start.previewUploadUrl) {
+              try {
+                await putWithProgress(start.previewUploadUrl, new File([poster], "video-preview.jpg", { type: "image/jpeg" }), () => {});
+              } catch {
+                // Keep the video upload even if its optional poster fails.
+              }
+            }
             patch(key, { progress: 1 });
             const view = await finishUploadAction(start.attachmentId);
             if (!view) return fail(`"${file.name}" didn't arrive completely. Please try again.`);

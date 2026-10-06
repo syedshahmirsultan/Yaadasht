@@ -14,11 +14,17 @@ const THEMES = [
 ] as const;
 
 const ACCENT_SWATCHES: { value: Preferences["accent"]; label: string; color: string }[] = [
+  { value: "default", label: "Default", color: "linear-gradient(135deg, #0f1426 50%, #fbfaf7 50%)" },
   { value: "saffron", label: "Amber", color: "#ea7a14" },
   { value: "rose", label: "Rose", color: "#c0566a" },
   { value: "sage", label: "Sage", color: "#5f8a5a" },
   { value: "ocean", label: "Ocean", color: "#3a7ca5" },
   { value: "plum", label: "Plum", color: "#7d5ba6" },
+  { value: "emerald", label: "Emerald", color: "#059669" },
+  { value: "violet", label: "Violet", color: "#7c3aed" },
+  { value: "amber", label: "Gold", color: "#d97706" },
+  { value: "crimson", label: "Crimson", color: "#e11d48" },
+  { value: "coral", label: "Coral", color: "#ea580c" },
 ];
 
 const NAV_CHOICES: { value: NavPosition; label: string }[] = [
@@ -159,19 +165,6 @@ export function AppearancePicker() {
             </button>
           </label>
         )}
-      </Group>
-
-      <Group label="Writing font" hint="The typeface for your memories.">
-        <div role="radiogroup" aria-label="Writing font" className="grid grid-cols-2 gap-2">
-          <Choice label="Classic serif" selected={prefs.writingFont === "serif"} onSelect={() => choose({ writingFont: "serif" })}>
-            <span className="font-serif text-3xl leading-none">Aa</span>
-            Classic
-          </Choice>
-          <Choice label="Clean sans" selected={prefs.writingFont === "sans"} onSelect={() => choose({ writingFont: "sans" })}>
-            <span className="font-sans text-3xl leading-none">Aa</span>
-            Clean
-          </Choice>
-        </div>
       </Group>
 
       <Group label="Text size">
