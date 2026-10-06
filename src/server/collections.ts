@@ -64,8 +64,49 @@ export async function countEntries(userId: string): Promise<number> {
 
 // ── Managing collections ─────────────────────────────────────────────────────
 
-export const COLLECTION_COLOR_KEYS = ["saffron", "sage", "dusk", "rose", "sky"] as const;
-export const COLLECTION_ICON_KEYS = ["book-open", "lightbulb", "sparkles", "folder", "plane", "heart", "briefcase", "graduation-cap"] as const;
+export const COLLECTION_COLOR_KEYS = [
+  "saffron",
+  "sage",
+  "dusk",
+  "rose",
+  "sky",
+  "emerald",
+  "violet",
+  "amber",
+  "crimson",
+  "coral",
+  "indigo",
+  "teal",
+] as const;
+
+export const COLLECTION_ICON_KEYS = [
+  "book-open",
+  "lightbulb",
+  "sparkles",
+  "folder",
+  "plane",
+  "heart",
+  "briefcase",
+  "graduation-cap",
+  "bookmark",
+  "camera",
+  "code",
+  "coffee",
+  "compass",
+  "feather",
+  "flame",
+  "globe",
+  "headphones",
+  "map-pin",
+  "music",
+  "palette",
+  "shield",
+  "star",
+  "sun",
+  "target",
+  "trophy",
+  "zap",
+] as const;
 
 export async function getCollection(userId: string, id: string): Promise<CollectionView | null> {
   const all = await listCollections(userId);

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /** Personal appearance choices. Stored per account so they follow people across devices. */
-export const ACCENTS = ["saffron", "rose", "sage", "ocean", "plum"] as const;
+export const ACCENTS = ["default", "saffron", "rose", "sage", "ocean", "plum", "emerald", "violet", "amber", "crimson", "coral"] as const;
 export const NAV_POSITIONS = ["left", "right", "top", "bottom"] as const;
 export const WRITING_FONTS = ["serif", "sans"] as const;
 export const TEXT_SIZES = ["small", "medium", "large"] as const;

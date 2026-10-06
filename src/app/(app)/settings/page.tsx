@@ -59,7 +59,7 @@ export default async function SettingsPage() {
                     Yaadasht is not end-to-end encrypted: our server decrypts your memories to show, search and share
                     them for you.
                   </li>
-                  <li>Never sold, never used for ads, never used to train AI.</li>
+                  <li>Never sold, never used to train AI.</li>
                 </ul>
                 <Link href="/privacy" className="inline-block pt-1 font-medium underline-offset-4 hover:underline">
                   Read the full privacy details
@@ -81,15 +81,33 @@ export default async function SettingsPage() {
             <div className="h-1.5 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={Math.round(usedPct)} aria-valuemin={0} aria-valuemax={100} aria-label="Storage used">
               <div className="h-full rounded-full bg-saffron" style={{ width: `${usedPct}%` }} />
             </div>
-            <div className="flex items-center gap-3 border-t border-border pt-4 text-muted-foreground">
-              <Download className="size-5" aria-hidden />
-              <span className="text-[0.95rem]">Download your whole archive at once: coming soon. Single memories can already be downloaded as Markdown.</span>
-            </div>
-            <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4">
-              <Link href="/trash" className="inline-flex h-10 items-center gap-2 rounded-full border border-border px-4 text-sm font-medium hover:bg-muted">
-                <Trash2 className="size-4" aria-hidden />
-                Trash
-              </Link>
+            <div className="flex flex-col gap-3 border-t border-border pt-4">
+              <div className="flex items-center gap-2">
+                <Download className="size-4 text-saffron" aria-hidden />
+                <span className="text-sm font-medium">Download your whole archive</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <a
+                  href="/api/export?format=pdf"
+                  download
+                  className="inline-flex h-10 items-center gap-2 rounded-full bg-saffron px-4 text-sm font-medium text-white shadow-soft transition hover:-translate-y-0.5 hover:bg-saffron-strong"
+                >
+                  <Download className="size-4" aria-hidden />
+                  Download PDF Archive
+                </a>
+                <a
+                  href="/api/export?format=markdown"
+                  download
+                  className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-background px-4 text-sm font-medium hover:bg-muted"
+                >
+                  <Download className="size-4" aria-hidden />
+                  Download Markdown Archive (.md)
+                </a>
+                <Link href="/trash" className="inline-flex h-10 items-center gap-2 rounded-full border border-border px-4 text-sm font-medium hover:bg-muted ml-auto">
+                  <Trash2 className="size-4" aria-hidden />
+                  Trash
+                </Link>
+              </div>
             </div>
           </div>
         </section>

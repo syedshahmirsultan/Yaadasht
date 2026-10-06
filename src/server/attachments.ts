@@ -22,6 +22,7 @@ export type AttachmentView = {
   sizeBytes: number;
   meta: AttachmentMeta;
   url: string | null;
+  previewUrl: string | null;
   downloadUrl: string | null;
 };
 
@@ -42,10 +43,11 @@ export type StartUploadInput = {
   mimeType: string;
   sizeBytes: number;
   meta: AttachmentMeta;
+  hasPreview?: boolean;
 };
 
 export type StartUploadResult =
-  | { ok: true; attachmentId: string; uploadUrl: string }
+  | { ok: true; attachmentId: string; uploadUrl: string; previewUploadUrl?: string }
   | { ok: false; reason: "too-large" | "too-long" | "quota" | "not-found" | "too-many" };
 
 export async function startUpload(userId: string, input: StartUploadInput): Promise<StartUploadResult> {
@@ -76,6 +78,7 @@ export async function startUpload(userId: string, input: StartUploadInput): Prom
   const objectKey = `u/${userId}/${id}`;
   try {
     const uploadUrl = await createUploadUrl(objectKey);
+    const previewUploadUrl = kind === "video" && input.hasPreview ? await createUploadUrl(`${objectKey}.preview`) : undefined;
     await db.insert(attachments).values({
       id,
       userId,
@@ -88,7 +91,7 @@ export async function startUpload(userId: string, input: StartUploadInput): Prom
       sizeBytes: input.sizeBytes,
       position: n,
     });
-    return { ok: true, attachmentId: id, uploadUrl };
+    return { ok: true, attachmentId: id, uploadUrl, previewUploadUrl };
   } catch (e) {
     await releaseQuota(userId, input.sizeBytes);
     throw e;
@@ -137,9 +140,11 @@ async function toViews(userId: string, rows: Row[]): Promise<AttachmentView[]> {
     mimeType: openText(keys, ctx(r.id, "mime_type_enc"), r.mimeTypeEnc),
     meta: r.metaEnc ? openJson<AttachmentMeta>(keys, ctx(r.id, "meta_enc"), r.metaEnc) : {},
   }));
-  const urls = await signedUrls(
-    decoded.flatMap((d) => [{ key: d.row.objectKey }, { key: d.row.objectKey, downloadName: d.filename }]),
-  );
+  const urls = await signedUrls(decoded.flatMap((d) => [
+    { key: d.row.objectKey },
+    { key: d.row.objectKey, downloadName: d.filename },
+    ...(d.row.kind === "video" ? [{ key: `${d.row.objectKey}.preview` }] : []),
+  ]));
   return decoded.map((d) => ({
     id: d.row.id,
     kind: d.row.kind,
@@ -148,6 +153,7 @@ async function toViews(userId: string, rows: Row[]): Promise<AttachmentView[]> {
     sizeBytes: d.row.sizeBytes,
     meta: d.meta,
     url: urls.get(d.row.objectKey) ?? null,
+    previewUrl: d.row.kind === "video" ? urls.get(`${d.row.objectKey}.preview`) ?? null : null,
     downloadUrl: urls.get(`${d.row.objectKey}#download`) ?? null,
   }));
 }
@@ -161,9 +167,22 @@ export async function listAttachments(userId: string, entryId: string): Promise<
   return toViews(userId, rows);
 }
 
+export async function listAttachmentsForEntries(userId: string, entryIds: string[]): Promise<Map<string, AttachmentView[]>> {
+  const result = new Map<string, AttachmentView[]>();
+  if (entryIds.length === 0) return result;
+  const rows = await getDb()
+    .select()
+    .from(attachments)
+    .where(and(eq(attachments.userId, userId), inArray(attachments.entryId, entryIds), eq(attachments.status, "ready")))
+    .orderBy(asc(attachments.position), asc(attachments.createdAt));
+  const views = await toViews(userId, rows);
+  rows.forEach((row, index) => result.set(row.entryId, [...(result.get(row.entryId) ?? []), views[index]]));
+  return result;
+}
+
 async function discard(userId: string, rows: Row[]) {
   if (rows.length === 0) return;
-  await removeObjects(rows.map((r) => r.objectKey));
+  await removeObjects(rows.flatMap((r) => (r.kind === "video" ? [r.objectKey, `${r.objectKey}.preview`] : [r.objectKey])));
   await getDb()
     .delete(attachments)
     .where(inArray(attachments.id, rows.map((r) => r.id)));

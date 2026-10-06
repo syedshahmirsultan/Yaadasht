@@ -13,11 +13,14 @@ export function isPreviewable(a: AttachmentView) {
 }
 
 /** Shows the contents of a PDF or text file right inside the memory. */
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+
 export function FilePreview({ a, onRemove }: { a: AttachmentView; onRemove?: () => void }) {
   const isPdf = a.mimeType === "application/pdf" || /\.pdf$/i.test(a.filename);
   const [text, setText] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   useEffect(() => {
     if (isPdf || !a.url) return;
@@ -45,14 +48,27 @@ export function FilePreview({ a, onRemove }: { a: AttachmentView; onRemove?: () 
           </a>
         )}
         {onRemove && (
-          <button
-            type="button"
-            onClick={() => window.confirm(`Remove "${a.filename}" from this memory?`) && onRemove()}
-            aria-label={`Remove ${a.filename}`}
-            className="inline-flex size-9 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-          >
-            <Trash2 className="size-4" />
-          </button>
+          <>
+            <button
+              type="button"
+              onClick={() => setConfirmOpen(true)}
+              aria-label={`Remove ${a.filename}`}
+              className="inline-flex size-9 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+            >
+              <Trash2 className="size-4" />
+            </button>
+            <ConfirmDialog
+              open={confirmOpen}
+              title="Remove file?"
+              description={`Are you sure you want to remove "${a.filename}" from this memory?`}
+              confirmLabel="Remove"
+              onConfirm={() => {
+                setConfirmOpen(false);
+                onRemove();
+              }}
+              onCancel={() => setConfirmOpen(false)}
+            />
+          </>
         )}
       </div>
 

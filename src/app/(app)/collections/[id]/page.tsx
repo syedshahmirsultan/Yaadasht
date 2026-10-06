@@ -1,4 +1,4 @@
-import { ArrowLeft, Folder, PenLine } from "lucide-react";
+import { ArrowLeft, Download, Folder, PenLine } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -40,6 +40,20 @@ export default async function CollectionPage({ params }: { params: Promise<{ id:
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <a
+            href={`/api/export?format=pdf&collectionId=${collection.id}`}
+            className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-background px-3 text-sm font-medium hover:bg-muted"
+          >
+            <Download className="size-4" aria-hidden />
+            PDF
+          </a>
+          <a
+            href={`/api/export?format=markdown&collectionId=${collection.id}`}
+            className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-background px-3 text-sm font-medium hover:bg-muted"
+          >
+            <Download className="size-4" aria-hidden />
+            Markdown
+          </a>
           <CollectionDialog
             existing={{ id: collection.id, name: collection.name, color: collection.color, icon: collection.icon, custom: collection.kind === "custom" }}
           />

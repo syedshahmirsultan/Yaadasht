@@ -9,13 +9,40 @@ import { Portal } from "@/components/ui/portal";
 import { cn } from "@/lib/utils";
 import { createCollectionAction, deleteCollectionAction, updateCollectionAction } from "@/server/actions";
 
-const COLORS = ["saffron", "sage", "dusk", "rose", "sky"] as const;
-const ICONS = ["book-open", "lightbulb", "sparkles", "folder", "plane", "heart", "briefcase", "graduation-cap"] as const;
+const COLORS = ["saffron", "sage", "dusk", "rose", "sky", "emerald", "violet", "amber", "crimson", "coral", "indigo", "teal"] as const;
+const ICONS = [
+  "book-open",
+  "lightbulb",
+  "sparkles",
+  "folder",
+  "plane",
+  "heart",
+  "briefcase",
+  "graduation-cap",
+  "bookmark",
+  "camera",
+  "code",
+  "coffee",
+  "compass",
+  "feather",
+  "flame",
+  "globe",
+  "headphones",
+  "map-pin",
+  "music",
+  "palette",
+  "shield",
+  "star",
+  "sun",
+  "target",
+  "trophy",
+  "zap",
+] as const;
 
 type Existing = { id: string; name: string; color: string; icon: string; custom: boolean };
 
 /** Create a collection, or edit an existing one (name, colour, icon, delete when empty). */
-export function CollectionDialog({ existing }: { existing?: Existing }) {
+export function CollectionDialog({ existing, trigger = "button" }: { existing?: Existing; trigger?: "button" | "card" }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(existing?.name ?? "");
@@ -34,32 +61,40 @@ export function CollectionDialog({ existing }: { existing?: Existing }) {
     e.preventDefault();
     if (!name.trim()) return;
     start(async () => {
-      if (existing) {
-        const res = await updateCollectionAction(existing.id, existing.custom ? { name, color, icon } : { color, icon });
-        if (!res.ok) return void toast.error("Couldn't save the collection.");
-        toast.success("Collection updated");
-      } else {
-        const res = await createCollectionAction({ name, color, icon });
-        if (!res.ok) return void toast.error("Couldn't create the collection.");
-        toast.success(`"${name.trim()}" created`);
-        router.push(`/collections/${res.id}`);
+      try {
+        if (existing) {
+          const res = await updateCollectionAction(existing.id, existing.custom ? { name, color, icon } : { color, icon });
+          if (!res.ok) return void toast.error("Couldn't save the collection.");
+          toast.success("Collection updated");
+        } else {
+          const res = await createCollectionAction({ name, color, icon });
+          if (!res.ok) return void toast.error("Couldn't create the collection.");
+          toast.success(`"${name.trim()}" created`);
+          router.push(`/collections/${res.id}`);
+        }
+        setOpen(false);
+        router.refresh();
+      } catch (err) {
+        toast.error("Something went wrong. Please try again.");
       }
-      setOpen(false);
-      router.refresh();
     });
   }
 
   function remove() {
     if (!existing) return;
     start(async () => {
-      const res = await deleteCollectionAction(existing.id);
-      if (res === "ok") {
-        toast.success("Collection deleted");
-        router.push("/collections");
-      } else if (res === "not-empty") {
-        toast.error("This collection still has memories. Move or delete them first, so nothing is lost.");
-      } else {
-        toast.error("Journal, Learnings and Ideas can't be deleted.");
+      try {
+        const res = await deleteCollectionAction(existing.id);
+        if (res === "ok") {
+          toast.success("Collection deleted");
+          router.push("/collections");
+        } else if (res === "not-empty") {
+          toast.error("This collection still has memories. Move or delete them first, so nothing is lost.");
+        } else {
+          toast.error("Journal, Learnings and Ideas can't be deleted.");
+        }
+      } catch (err) {
+        toast.error("Couldn't delete collection. Please try again.");
       }
     });
   }
@@ -76,6 +111,20 @@ export function CollectionDialog({ existing }: { existing?: Existing }) {
           className="inline-flex size-10 items-center justify-center rounded-full border border-border bg-card text-muted-foreground shadow-soft hover:text-foreground"
         >
           <Settings2 className="size-4" />
+        </button>
+      ) : trigger === "card" ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="group relative flex h-full min-h-[170px] w-full flex-col justify-between overflow-hidden rounded-[1.5rem] border border-dashed border-border bg-card/60 p-6 text-left shadow-soft transition hover:-translate-y-1 hover:border-saffron/50 hover:bg-card hover:shadow-lift"
+        >
+          <span className="inline-flex size-12 items-center justify-center rounded-2xl bg-saffron/15 text-saffron transition group-hover:scale-105 group-hover:-rotate-6">
+            <Plus className="size-6" />
+          </span>
+          <div>
+            <p className="font-serif text-2xl font-medium">New collection</p>
+            <p className="mt-1 text-sm text-muted-foreground">Create a custom space for books, travel, work, etc.</p>
+          </div>
         </button>
       ) : (
         <button

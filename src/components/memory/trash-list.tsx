@@ -2,8 +2,9 @@
 
 import { RotateCcw, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { formatMemoryDate } from "@/lib/format";
 import { deleteForeverAction, emptyTrashAction, restoreEntryAction } from "@/server/actions";
 
@@ -12,6 +13,8 @@ type Item = { id: string; title: string | null; excerpt: string; memoryDate: str
 export function TrashList({ items }: { items: Item[] }) {
   const router = useRouter();
   const [pending, start] = useTransition();
+  const [emptyConfirmOpen, setEmptyConfirmOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const run = (fn: () => Promise<unknown>, message: string) =>
     start(async () => {
@@ -26,17 +29,41 @@ export function TrashList({ items }: { items: Item[] }) {
         <button
           type="button"
           disabled={pending}
-          onClick={() => {
-            if (window.confirm(`Delete ${items.length} ${items.length === 1 ? "memory" : "memories"} forever? This can't be undone.`)) {
-              run(emptyTrashAction, "Trash emptied");
-            }
-          }}
+          onClick={() => setEmptyConfirmOpen(true)}
           className="inline-flex h-9 items-center gap-2 rounded-full border border-destructive/40 px-4 text-sm font-medium text-destructive hover:bg-destructive/10"
         >
           <Trash2 className="size-4" />
           Empty Trash
         </button>
       </div>
+
+      <ConfirmDialog
+        open={emptyConfirmOpen}
+        title="Empty Trash?"
+        description={`Are you sure you want to delete ${items.length} ${items.length === 1 ? "memory" : "memories"} forever? This action cannot be undone.`}
+        confirmLabel="Empty Trash"
+        onConfirm={() => {
+          setEmptyConfirmOpen(false);
+          run(emptyTrashAction, "Trash emptied");
+        }}
+        onCancel={() => setEmptyConfirmOpen(false)}
+      />
+
+      <ConfirmDialog
+        open={Boolean(deleteId)}
+        title="Delete memory forever?"
+        description="Are you sure you want to delete this memory forever? This action cannot be undone."
+        confirmLabel="Delete forever"
+        onConfirm={() => {
+          if (deleteId) {
+            const id = deleteId;
+            setDeleteId(null);
+            run(() => deleteForeverAction(id), "Deleted forever");
+          }
+        }}
+        onCancel={() => setDeleteId(null)}
+      />
+
       <ul className="space-y-3">
         {items.map((e) => (
           <li key={e.id} className="flex items-start gap-4 rounded-2xl border border-border bg-card p-5 shadow-soft">
@@ -60,11 +87,7 @@ export function TrashList({ items }: { items: Item[] }) {
                 disabled={pending}
                 aria-label="Delete forever"
                 title="Delete forever"
-                onClick={() => {
-                  if (window.confirm("Delete this memory forever? This can't be undone.")) {
-                    run(() => deleteForeverAction(e.id), "Deleted forever");
-                  }
-                }}
+                onClick={() => setDeleteId(e.id)}
                 className="inline-flex size-9 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
               >
                 <Trash2 className="size-4" />
