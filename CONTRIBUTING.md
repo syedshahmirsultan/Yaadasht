@@ -38,5 +38,3 @@ npm test
 - Small, focused PRs with a clear description and screenshots for UI changes.
 - Tests pass, `npm run lint` and `npm run typecheck` clean.
 - Update docs when behavior or the privacy model changes.
-
-By contributing you agree your contributions are licensed under the project's AGPL-3.0 license.
