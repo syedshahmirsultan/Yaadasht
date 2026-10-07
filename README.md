@@ -131,12 +131,8 @@ More detail is in [CONTRIBUTING.md](CONTRIBUTING.md). Please report security iss
 - [x] Sign-in, encryption, app shell, themes and customisable layout
 - [x] Editor, collections, tags, trash, search, timeline, *On this day*
 - [x] Photos, videos and files
+- [x] Full archive export
 - [ ] Calendar, year view and filters
 - [ ] Sharing a single memory by private link
 - [ ] Letters to your future self, delivered by email
 - [ ] Optional AI memory search (off by default)
-- [ ] Full archive export
-
-## License
-
-[AGPL-3.0](LICENSE). The Urdu wordmark is drawn from [Noto Nastaliq Urdu](https://fonts.google.com/noto/specimen/Noto+Nastaliq+Urdu) (SIL Open Font License 1.1).
