@@ -1,7 +1,7 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Download, FileText, Loader2, Music, Play, RotateCcw, Trash2, X, ZoomIn, ZoomOut } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ChevronLeft, ChevronRight, Download, FileText, Loader2, Maximize2, Minimize2, Music, Play, RotateCcw, Trash2, X, ZoomIn, ZoomOut } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { Portal } from "@/components/ui/portal";
 import { cn } from "@/lib/utils";
 import type { AttachmentView } from "@/server/attachments";
@@ -142,7 +142,7 @@ export function AttachmentGallery({
       )}
 
       {open !== null && visual[open] && (
-        <Lightbox items={visual} index={open} onIndex={setOpen} onClose={() => setOpen(null)} />
+        <Lightbox key={visual[open].id} items={visual} index={open} onIndex={setOpen} onClose={() => setOpen(null)} />
       )}
     </div>
   );
@@ -233,10 +233,19 @@ function Lightbox({
 }) {
   const a = items[index];
   const [zoom, setZoom] = useState(1);
+  const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
+  const [stageSize, setStageSize] = useState({ width: 0, height: 0 });
+  const stageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setZoom(1);
-  }, [index, a?.id]);
+    const stage = stageRef.current;
+    if (!stage) return;
+    const measure = () => setStageSize({ width: stage.offsetWidth, height: stage.offsetHeight });
+    const observer = new ResizeObserver(measure);
+    observer.observe(stage);
+    measure();
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -247,6 +256,10 @@ function Lightbox({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [index, items.length, onClose, onIndex]);
+
+  const fitScale = imageSize.width > 0 && stageSize.width > 0 && stageSize.height > 0
+    ? Math.min(Math.max(1, stageSize.width - 48) / imageSize.width, Math.max(1, stageSize.height - 48) / imageSize.height, 1)
+    : 1;
 
   return (
     <Portal>
@@ -282,6 +295,15 @@ function Lightbox({
                   >
                     <ZoomIn className="size-3.5" />
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => setZoom((z) => (z > 1 ? 1 : 1.5))}
+                    className="ml-1 p-1 text-muted-foreground hover:text-foreground"
+                    aria-label={zoom > 1 ? "Fit image to screen" : "Maximize image"}
+                    title={zoom > 1 ? "Fit image to screen" : "Maximize image"}
+                  >
+                    {zoom > 1 ? <Minimize2 className="size-3.5" /> : <Maximize2 className="size-3.5" />}
+                  </button>
                   {zoom !== 1 && (
                     <button
                       type="button"
@@ -307,16 +329,22 @@ function Lightbox({
           </div>
 
           {/* Body with natural sizing & zoom */}
-          <div className="relative flex flex-1 items-center justify-center overflow-auto p-6 max-h-[78vh]">
+          <div ref={stageRef} className="relative h-[calc(90vh-6rem)] max-h-[78vh] w-full flex-none overflow-auto">
             {a.kind === "image" ? (
-              <div className="overflow-auto max-h-full max-w-full flex items-center justify-center p-2">
+              <div className="flex h-max min-h-full w-max min-w-full items-center justify-center p-6">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   key={a.id}
                   src={a.url!}
                   alt={a.filename}
-                  style={{ transform: `scale(${zoom})`, transformOrigin: "center center" }}
-                  className="animate-rise max-h-[70vh] w-auto max-w-full rounded-2xl object-contain shadow-soft transition-transform duration-200"
+                  onLoad={(event) => setImageSize({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })}
+                  style={{
+                    width: imageSize.width > 0 ? Math.round(imageSize.width * fitScale * zoom) : undefined,
+                    height: imageSize.height > 0 ? Math.round(imageSize.height * fitScale * zoom) : undefined,
+                    maxWidth: imageSize.width > 0 ? "none" : "calc(100% - 3rem)",
+                    maxHeight: imageSize.height > 0 ? "none" : "70vh",
+                  }}
+                  className="animate-rise h-auto w-auto rounded-2xl object-contain shadow-soft"
                 />
               </div>
             ) : (
