@@ -63,3 +63,6 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Contentsquare wizard (generated)
+.cs-wizard/
