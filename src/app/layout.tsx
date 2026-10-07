@@ -2,6 +2,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata, Viewport } from "next";
 import { Inter, Newsreader } from "next/font/google";
 import { Providers } from "@/components/providers";
+import { Contentsquare } from "./contentsquare";
 import "./globals.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
@@ -53,6 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <body className="min-h-full">
         <ClerkProvider appearance={clerkAppearance}>
+          <Contentsquare />
           <Providers>{children}</Providers>
         </ClerkProvider>
       </body>
