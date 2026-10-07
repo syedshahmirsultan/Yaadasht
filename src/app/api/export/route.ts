@@ -161,12 +161,16 @@ export async function GET(req: Request) {
   const user = await requireUser();
   const url = new URL(req.url);
   const format = url.searchParams.get("format") ?? "pdf";
-  const collectionId = url.searchParams.get("collectionId") ?? undefined;
+  const entryId = url.searchParams.get("entryId") ?? undefined;
+  const requestedCollectionId = url.searchParams.get("collectionId") ?? undefined;
+  const selectedEntry = entryId ? await getEntry(user.id, entryId) : null;
+  if (entryId && !selectedEntry) return new Response("Not found", { status: 404 });
+  const collectionId = requestedCollectionId ?? selectedEntry?.collectionId;
   const collection = collectionId ? await getCollection(user.id, collectionId) : null;
   if (collectionId && !collection) return new Response("Not found", { status: 404 });
 
   const [cards, allCollections] = await Promise.all([
-    (async () => {
+    selectedEntry ? Promise.resolve([selectedEntry]) : (async () => {
       const result = [];
       let before: { date: string; id: string } | undefined;
       while (true) {
@@ -179,10 +183,11 @@ export async function GET(req: Request) {
     })(),
     listCollections(user.id),
   ]);
-  const entries = (await Promise.all(cards.map((card) => getEntry(user.id, card.id)))).filter((entry): entry is EntryFull => entry !== null);
+  const entries = selectedEntry ? [selectedEntry] : (await Promise.all(cards.map((card) => getEntry(user.id, card.id)))).filter((entry): entry is EntryFull => entry !== null);
   const collectionNames = new Map(allCollections.map((item) => [item.id, item.name]));
   const media = storageConfigured() ? await listAttachmentsForEntries(user.id, entries.map((entry) => entry.id)) : new Map();
-  const baseName = collection ? collection.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "collection" : "yaadasht-archive";
+  const exportName = selectedEntry?.title ?? collection?.name ?? "yaadasht-archive";
+  const baseName = exportName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "yaadasht-archive";
 
   if (format === "markdown" || format === "md") {
     const { content, date } = await markdownContent(entries, collectionNames, media, collection?.name);
