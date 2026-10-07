@@ -155,7 +155,7 @@ export default function LandingPage() {
               style={{ animationDelay: "160ms" }}
             >
               Yaadasht is one private, beautiful home for your journal, the things you learn, your ideas and the moments
-              you never want to lose. And it brings them back to you, right when they matter.
+              you never want to lose.
             </p>
 
             <div className="animate-rise mt-9 flex flex-col gap-3 sm:flex-row sm:items-center" style={{ animationDelay: "240ms" }}>

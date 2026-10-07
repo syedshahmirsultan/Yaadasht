@@ -1,4 +1,4 @@
-import { ArrowLeft, Clock, Download, Lock, PenLine } from "lucide-react";
+import { ArrowLeft, Clock, Download, FileText, Lock, PenLine } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -14,6 +14,7 @@ import { AttachmentGallery } from "@/components/media/attachment-gallery";
 import { listAttachments } from "@/server/attachments";
 import { storageConfigured } from "@/server/storage";
 import { requireUser } from "@/server/users";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 export const metadata: Metadata = { title: "Memory" };
 
@@ -41,14 +42,25 @@ export default async function MemoryPage({ params }: { params: Promise<{ id: str
           {collection?.name ?? "Back"}
         </Link>
         <div className="flex items-center gap-1">
-          <a
-            href={`/api/entries/${entry.id}/markdown`}
-            className="inline-flex size-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
-            aria-label="Download as Markdown"
-            title="Download as Markdown"
-          >
-            <Download className="size-4" />
-          </a>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className="inline-flex size-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+              aria-label="Download memory"
+              title="Download memory"
+            >
+              <Download className="size-4" aria-hidden />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuItem render={<a href={`/api/export?format=pdf&entryId=${entry.id}`} />}>
+                <FileText className="size-4" aria-hidden />
+                PDF
+              </DropdownMenuItem>
+              <DropdownMenuItem render={<a href={`/api/entries/${entry.id}/markdown`} />}>
+                <FileText className="size-4" aria-hidden />
+                Markdown
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <MemoryActions id={entry.id} />
           <Link
             href={`/m/${entry.id}/edit`}
