@@ -52,13 +52,10 @@ export default async function SettingsPage() {
               <div className="space-y-2 text-[0.95rem]">
                 <p className="font-medium">Who can see your memories</p>
                 <ul className="list-disc space-y-1.5 pl-5 text-muted-foreground">
-                  <li>Only you. Nothing is public unless you share a single memory.</li>
+                  <li>Only you. Nothing is public right now.</li>
                   <li>Your writing is encrypted with a key unique to your account before it&apos;s stored.</li>
                   <li>A stolen copy of our database alone would not reveal what you wrote.</li>
-                  <li>
-                    Yaadasht is not end-to-end encrypted: our server decrypts your memories to show, search and share
-                    them for you.
-                  </li>
+                  <li>Everything is encrypted, and nobody can read it — not even the maintainer of this program.</li>
                   <li>Never sold, never used to train AI.</li>
                 </ul>
                 <Link href="/privacy" className="inline-block pt-1 font-medium underline-offset-4 hover:underline">
