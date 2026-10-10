@@ -166,7 +166,7 @@ export function LifetimeScroll() {
             >
               <span className="font-medium text-foreground">Even if Yaadasht disappears, your memories don&apos;t.</span>
               <span className="flex items-center gap-1.5">
-                <FileText className="size-4 text-saffron" /> Open formats
+                <FileText className="size-4 text-saffron" /> Markdown + PDF
               </span>
               <span className="flex items-center gap-1.5">
                 <Download className="size-4 text-saffron" /> Export anytime

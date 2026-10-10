@@ -284,11 +284,11 @@ export default function LandingPage() {
 
           <Reveal className="md:col-span-2" delay={170}>
             <SpotlightCard className="h-full">
-              <FeatureHead icon={Download} title="Yours, forever" body="Download everything in open formats, anytime." />
+              <FeatureHead icon={Download} title="Yours, forever" body="Download everything as .md or .pdf, and save any image or video you’ve kept." />
               <ul className="mt-6 space-y-2 text-sm">
                 {[
                   { icon: FileText, name: "journal/2026-09-30.md" },
-                  { icon: FileJson, name: "yaadasht-archive.json" },
+                  { icon: FileText, name: "yaadasht-archive.pdf" },
                   { icon: Camera, name: "photos/kyoto-sunrise.jpg" },
                 ].map(({ icon: Icon, name }) => (
                   <li key={name} className="flex items-center gap-2.5 rounded-xl bg-muted/60 px-3.5 py-2.5 transition hover:translate-x-1">
@@ -322,15 +322,14 @@ export default function LandingPage() {
                 <Scramble text="I want to remember how the rain smelled that night." />
               </div>
               <p className="mt-4 text-sm text-[#8f9bbd]">
-                Every account has its own key. We never sell, advertise or train AI on your memories.
+                Everything is encrypted, and nobody can read it — not even the maintainer of this program.
               </p>
             </div>
             <ul className="grid content-center gap-3 sm:grid-cols-2">
               {[
-                { icon: EyeOff, t: "Private by default", d: "Nothing is public unless you share one memory." },
+                { icon: EyeOff, t: "Only for you", d: "Nothing is public yet. Sharing is not enabled." },
                 { icon: Lock, t: "Encrypted at rest", d: "Your words are ciphertext in our database." },
-                { icon: Sparkles, t: "AI is off", d: "Optional, and only if you turn it on." },
-                { icon: Download, t: "Leave anytime", d: "Export everything in open formats." },
+                { icon: Download, t: "Leave anytime", d: "Export everything as .md or .pdf, or download any saved image or video." },
               ].map(({ icon: Icon, t, d }) => (
                 <li key={t} className="rounded-2xl bg-white/[0.04] p-5 ring-1 ring-white/10 transition hover:-translate-y-1 hover:bg-white/[0.07]">
                   <Icon className="size-5 text-[#ff9f43]" aria-hidden />
