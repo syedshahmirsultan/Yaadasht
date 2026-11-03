@@ -53,7 +53,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${inter.variable} ${newsreader.variable} h-full antialiased`}
     >
       <body className="min-h-full">
-        <ClerkProvider appearance={clerkAppearance}>
+        <ClerkProvider appearance={clerkAppearance} 
+        proxyUrl={process.env.NEXT_PUBLIC_CLERK_PROXY_URL}>
           <Contentsquare />
           <Providers>{children}</Providers>
         </ClerkProvider>
