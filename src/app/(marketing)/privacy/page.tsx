@@ -12,7 +12,6 @@ const SECTIONS: { title: string; items: string[] }[] = [
     title: "What is protected",
     items: [
       "The contents of your memories are encrypted before they are stored in our database, so a copied database alone does not reveal what you wrote.",
-      "Each account has its own encryption key. Those keys are kept outside the database, which means a stolen backup or database dump does not reveal your writing.",
       "Photos, videos and other files are kept in private storage and are only reachable through the account that uploaded them.",
       "Right now, this platform is private by default. Public sharing is not enabled.",
     ],
